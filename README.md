@@ -46,13 +46,14 @@ To start playing with the adapter using Visual Studio Code:
 `~/.vscode/extensions`.
 2. Open a terminal and `cd` into the repository's top catalog,
 which will probably be `$ cd ~/.vscode/extensions/pike-debug-adapter-playground`
-3. Open Visual Studio Code in the current working directory (`$ code .`).
-4. Run the adapter from a terminal as described in the previous section.
+3. Run `$ npm install` to install the extension.
+4. Open Visual Studio Code in the current working directory (`$ code .`).
+5. Run the adapter from a terminal as described in the previous section.
 `$ pike adapter.pike -p -d`
 (VSCode has an integrated terminal, if you wish).
-5. Choose the configuration `lauch-socket` or `attach-scket` and press the
+6. Choose the configuration `lauch-socket` or `attach-scket` and press the
 green button.
-6. Interact with the editor and observe what messages are exchanged between
+7. Interact with the editor and observe what messages are exchanged between
 the client and the adapter.
 
 
