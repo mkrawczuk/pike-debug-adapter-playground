@@ -61,7 +61,7 @@ the client and the adapter.
 Do not hesitate to open an issue or a pull request, or contact me via github/
 email. Your feedback is more than appreciated.
 
-
+-------------------------------------------------------------------------------
 
 [*] Actually, the quicktype-generated file has been created with applying a tiny
 change to quicktype's Pike renderer.
