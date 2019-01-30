@@ -1,0 +1,109 @@
+{
+	"name": "pike-dbg-playground",
+	"displayName": "Pike Debug Adapter Playground",
+	"version": "0.1.0",
+	"publisher": "mkrawczuk",
+	"description": ".",
+	"author": {
+		"name": "mkrawczuk",
+		"email": "krawczukmat@gmail.com"
+	},
+	"license": "MIT",
+	"keywords": [
+		"pike",
+		"debugger",
+		"debug",
+		"adapter"
+	],
+	"engines": {
+		"vscode": "^1.30.0-insider"
+	},
+	"categories": [
+		"Debuggers"
+	],
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/mkrawczuk/pike-debug-adapter-playground.git"
+	},
+	"bugs": {},
+	"scripts": {
+		"package": "vsce package",
+		"publish": "vsce publish"
+	},
+	"dependencies": {
+		"vscode-debugadapter": "1.33.0"
+	},
+	"devDependencies": {
+		"vscode": "1.1.28",
+		"vsce": "1.54.0"
+	},
+	"contributes": {
+		"breakpoints": [
+			{
+				"language": "pike"
+			},
+			{
+				"language": "pmod"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "pike",
+				"label": "Pike Debugger",
+				"program": "adapter.pike",
+				"runtime": "pike",
+				"initialConfigurations": [
+					{
+						"type": "pike",
+						"request": "launch",
+						"name": "launch-stdio"
+					  },
+					  {
+						"type": "pike",
+						"request": "launch",
+						"name": "launch-socket",
+						"debugServer": 4711
+					  },
+					  {
+						"type": "pike",
+						"request": "attach",
+						"name": "attach",
+						"debugServer": 4711
+					  }
+				],
+				"configurationSnippets": [
+					{
+						"label": "Pike: Launch (stdio)",
+						"description": "Launch the adapter and communicate through stdio.",
+						"body": {
+							"type": "pike",
+							"request": "launch",
+							"name": "launch-stdio"
+						}
+					},
+					{
+						"label": "Pike: Launch (socket)",
+						"description": "Connect to the launched adapter listening on port `debugServer`.",
+						"body": {
+							"type": "pike",
+							"request": "launch",
+							"name": "launch-socket",
+							"debugServer": "4711"
+						}
+					},
+					{
+						"label": "Pike: Attach",
+						"description": "Attach to the launched adapter listening on port `debugServer`.",
+						"body": {
+							"type": "pike",
+							"request": "attach",
+							"name": "attach",
+							"debugServer": "4711"
+						}
+					}
+				]
+			}
+		]
+	}
+}
