@@ -984,7 +984,7 @@ class Source {
     }
 
     protected mapping(string:mixed) to_json() {
-        return 
+        return
         ([
             "adapterData" : adapter_data,
             "checksums" : checksums,
