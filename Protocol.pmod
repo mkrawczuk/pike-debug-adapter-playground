@@ -46,12 +46,11 @@ class ProtocolMessage {
     }
 
     protected mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ([
+        return
+        ([
             "seq" : seq,
             "type" : type,
         ]);
-
-        return json;
     }
 }
 
@@ -59,8 +58,8 @@ class ProtocolMessage {
 class Event {
     inherit ProtocolMessage;
 
-    mixed  body;  // json: "body"
-    string event; // json: "event"
+    mapping(string:mixed) body; // json: "body"
+    string event;               // json: "event"
 
     protected void create(mixed|void json) {
         if (json) {
@@ -145,6 +144,85 @@ class Response {
     }
 }
 
+// The event indicates that some information about a breakpoint has changed.
+class BreakpointEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "reason": "",
+                "breakpoint": Breakpoint()
+            ]);
+        }
+
+        event = "breakpoint";
+    }
+}
+
+// The event indicates that one or more capabilities have changed.
+// Since the capabilities are dependent on the frontend and its UI, it might not be possible
+// to change that at random times (or too late).
+// Consequently this event has a hint characteristic: a frontend can only be expected to
+// make a 'best effort' in honouring individual capabilities but there are no guarantees.
+// Only changed capabilities need to be included, all other capabilities keep their values.
+class CapabilitiesEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "reason": "",
+                "capabilities": Capabilities()
+            ]);
+        }
+
+        event = "capabilities";
+    }
+}
+
+// The event indicates that the execution of the debuggee has continued.
+// Please note: a debug adapter is not expected to send this event in response to a request
+// that implies that execution continues, e.g. 'launch' or 'continue'.
+// It is only necessary to send a 'continued' event if there was no previous request that
+// implied this.
+class ContinuedEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "threadId": 0
+            ]);
+        }
+
+        event = "continued";
+    }
+}
+
+// The event indicates that the debuggee has exited and returns its exit code.
+class ExitedEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "exitCode": 0
+            ]);
+        }
+
+        event = "exited";
+    }
+}
+
 // This event indicates that the debug adapter is ready to accept configuration requests
 // (e.g. SetBreakpointsRequest, SetExceptionBreakpointsRequest).
 // A debug adapter is expected to send this event when it is ready to accept configuration
@@ -170,26 +248,128 @@ class InitializedEvent {
     }
 }
 
+// The event indicates that some source has been added, changed, or removed from the set of
+// all loaded sources.
+class LoadedSourceEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "reason": "",
+                "source": Source()
+            ]);
+        }
+
+        event = "loadedSource";
+    }
+}
+
+// The event indicates that some information about a module has changed.
+class ModuleEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "reason": "",
+                "module": Module()
+            ]);
+        }
+
+        event = "module";
+    }
+}
+
+// The event indicates that the target has produced some output.
+class OutputEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "output": ""
+            ]);
+        }
+
+        event = "output";
+    }
+}
+
+// The event indicates that the debugger has begun debugging a new process. Either one that
+// it has launched, or one that it has attached to.
+class ProcessEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "name": ""
+            ]);
+        }
+
+        event = "process";
+    }
+}
+
+// The event indicates that the execution of the debuggee has stopped due to some condition.
+// This can be caused by a break point previously set, a stepping action has completed, by
+// executing a debugger statement etc.
 class StoppedEvent {
     inherit Event;
 
-    mixed body;
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "reason": ""
+            ]);
+        }
+
+        event = "stopped";
+    }
+}
+
+// The event indicates that debugging of the debuggee has terminated. This does **not** mean
+// that the debuggee itself has exited.
+class TerminatedEvent {
+    inherit Event;
 
     protected void create (mixed|void json) {
         if (json) ::create(json);
         else ::create();
 
-        event = "stopped";
-    }
-    mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ::to_json();
-        json += ([
-            "body" : body,
-        ]);
-
-        return json;
+        event = "terminated";
     }
 }
+
+// The event indicates that a thread has started or exited.
+class ThreadEvent {
+    inherit Event;
+
+    protected void create (mixed|void json) {
+        if (json) ::create(json);
+        else {
+            ::create();
+            body = ([
+                "reason": "",
+                "threadId": 0
+            ]);
+        }
+
+        event = "thread";
+    }
+}
+
 // The 'initialize' request is sent as the first request from the client to the debug
 // adapter in order to configure it with client capabilities and to retrieve capabilities
 // from the debug adapter.
@@ -256,8 +436,9 @@ class InitializeRequestArguments {
         supports_variable_type = json["supportsVariableType"];
     }
 
-    string to_json() {
-        mapping(string:mixed) json = ([
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
             // no need to explicitly disable options
             //
             // "adapterID" : adapter_id,
@@ -271,8 +452,6 @@ class InitializeRequestArguments {
             // "supportsVariablePaging" : supports_variable_paging,
             // "supportsVariableType" : supports_variable_type,
         ]);
-
-        return Standards.JSON.encode(json);
     }
 }
 
@@ -294,7 +473,7 @@ class InitializeResponse {
         command = "initialize";
     }
 
-    mapping(string:mixed) to_json() {
+    protected mapping(string:mixed) to_json() {
         mapping(string:mixed) json = ::to_json();
         json += ([
             "body" : body,
@@ -369,8 +548,9 @@ class Capabilities {
         supports_terminate_debuggee = json["supportsTerminateDebuggee"];
     }
 
-    mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ([
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
             // "additionalModuleColumns" : additional_module_columns,
             // "exceptionBreakpointFilters" : exception_breakpoint_filters,
             // "supportedChecksumAlgorithms" : supported_checksum_algorithms,
@@ -398,8 +578,6 @@ class Capabilities {
             // "supportsValueFormattingOptions" : supports_value_formatting_options,
             // "supportsTerminateDebuggee" : supports_terminate_debuggee,
         ]);
-
-        return json;
     }
 }
 
@@ -425,16 +603,15 @@ class ColumnDescriptor {
         width = json["width"];
     }
 
-    mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ([
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
             "attributeName" : attribute_name,
             "format" : format,
             "label" : label,
             "type" : type,
             "width" : width,
         ]);
-
-        return json;
     }
 }
 
@@ -455,14 +632,13 @@ class ExceptionBreakpointsFilter {
         label = json["label"];
     }
 
-    mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ([
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
             "default" : is_default,
             "filter" : filter,
             "label" : label,
         ]);
-
-        return json;
     }
 }
 
@@ -593,13 +769,13 @@ class EvaluateArguments {
     }
 
     protected mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ([
-                "context" : context,
-                "expression" : expression,
-                "format" : format,
-                "frameId" : frame_id,    ]);
-
-        return json;
+        return
+        ([
+            "context" : context,
+            "expression" : expression,
+            "format" : format,
+            "frameId" : frame_id,
+        ]);
     }
 }
 
@@ -632,6 +808,70 @@ class ThreadsResponse {
     }
 }
 
+// Information about a Breakpoint created in setBreakpoints or setFunctionBreakpoints.
+class Breakpoint {
+    inherit JsonEncodable;
+
+    int    column;     // json: "column"
+    int    end_column; // json: "endColumn"
+    int    end_line;   // json: "endLine"
+    int    id;         // json: "id"
+    int    line;       // json: "line"
+    string message;    // json: "message"
+    Source source;     // json: "source"
+    bool   verified;   // json: "verified"
+
+    protected void create(mixed|void json) {
+        if (!json) return;
+
+        column = json["column"];
+        end_column = json["endColumn"];
+        end_line = json["endLine"];
+        id = json["id"];
+        line = json["line"];
+        message = json["message"];
+        source = Source(json["source"]);
+        verified = json["verified"];
+    }
+
+    protected mapping(string:mixed) to_json() {
+        return 
+        ([
+            "column" : column,
+            "endColumn" : end_column,
+            "endLine" : end_line,
+            "id" : id,
+            "line" : line,
+            "message" : message,
+            "source" : source,
+            "verified" : verified,
+        ]);
+    }
+}
+
+// The checksum of an item calculated by the specified algorithm.
+class Checksum {
+    inherit JsonEncodable;
+
+    string algorithm; // json: "algorithm"
+    string checksum;  // json: "checksum"
+
+    protected void create(mixed|void json) {
+        if (!json) return;
+
+        algorithm = json["algorithm"];
+        checksum = json["checksum"];
+    }
+
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
+            "algorithm" : algorithm,
+            "checksum" : checksum,
+        ]);
+    }
+}
+
 // A Thread.
 class DAPThread {
     inherit JsonEncodable;
@@ -644,15 +884,116 @@ class DAPThread {
 
         id = json["id"];
         name = json["name"];
-
     }
 
-    mapping(string:mixed) to_json() {
-        mapping(string:mixed) json = ([
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
             "id" : id,
             "name" : name
         ]);
+    }
+}
 
-        return json;
+// The new, changed, or removed module. In case of 'removed' only the module id is used.
+//
+// A Module object represents a row in the modules view.
+// Two attributes are mandatory: an id identifies a module in the modules view and is used
+// in a ModuleEvent for identifying a module for adding, updating or deleting.
+// The name is used to minimally render the module in the UI.
+//
+// Additional attributes can be added to the module. They will show up in the module View if
+// they have a corresponding ColumnDescriptor.
+//
+// To avoid an unnecessary proliferation of additional attributes with similar semantics but
+// different names
+// we recommend to re-use attributes from the 'recommended' list below first, and only
+// introduce new attributes if nothing appropriate could be found.
+class Module {
+    inherit JsonEncodable;
+
+    string address_range;    // json: "addressRange"
+    string date_time_stamp;  // json: "dateTimeStamp"
+    int|string  id;          // json: "id"
+    bool   is_optimized;     // json: "isOptimized"
+    bool   is_user_code;     // json: "isUserCode"
+    string name;             // json: "name"
+    string path;             // json: "path"
+    string symbol_file_path; // json: "symbolFilePath"
+    string symbol_status;    // json: "symbolStatus"
+    string version;          // json: "version"
+
+
+    protected void create(mixed|void json) {
+        if (!json) return;
+
+        address_range = json["addressRange"];
+        date_time_stamp = json["dateTimeStamp"];
+        id = json["id"];
+        is_optimized = json["isOptimized"];
+        is_user_code = json["isUserCode"];
+        name = json["name"];
+        path = json["path"];
+        symbol_file_path = json["symbolFilePath"];
+        symbol_status = json["symbolStatus"];
+        version = json["version"];
+    }
+
+    protected mapping(string:mixed) to_json() {
+        return
+        ([
+            "addressRange" : address_range,
+            "dateTimeStamp" : date_time_stamp,
+            "id" : id,
+            "isOptimized" : is_optimized,
+            "isUserCode" : is_user_code,
+            "name" : name,
+            "path" : path,
+            "symbolFilePath" : symbol_file_path,
+            "symbolStatus" : symbol_status,
+            "version" : version,
+        ]);
+    }
+}
+
+// A Source is a descriptor for source code. It is returned from the debug adapter as part
+// of a StackFrame and it is used by clients when specifying breakpoints.
+class Source {
+    inherit JsonEncodable;
+
+    mixed           adapter_data;      // json: "adapterData"
+    array(Checksum) checksums;         // json: "checksums"
+    string          name;              // json: "name"
+    string          origin;            // json: "origin"
+    string          path;              // json: "path"
+    string          presentation_hint; // json: "presentationHint"
+    int             source_reference;  // json: "sourceReference"
+    array(Source)   sources;           // json: "sources"
+
+    protected void create(mixed|void json) {
+        if (!json) return;
+
+        adapter_data = json["adapterData"];
+        checksums = map(json["checksums"], Checksum);
+        name = json["name"];
+        origin = json["origin"];
+        path = json["path"];
+        presentation_hint = json["presentationHint"];
+        source_reference = json["sourceReference"];
+        sources = map(json["sources"], Source);
+    }
+
+    protected mapping(string:mixed) to_json() {
+        return 
+        ([
+            "adapterData" : adapter_data,
+            "checksums" : checksums,
+            "name" : name,
+            "origin" : origin,
+            "path" : path,
+            "presentationHint" : presentation_hint,
+            "sourceReference" : source_reference,
+            "sources" : sources,
+        ]);
     }
 }
