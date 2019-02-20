@@ -138,9 +138,9 @@ void handle_scopes_request(mixed msg) {
     res->body = ([
         "scopes" : ({
             ([
-                "name" : "scope name",
-                "variableReference" : "variable reference",
-                "expensive" : false
+                "name" : "Current scope",
+                "variablesReference" : 0,
+                "expensive" : true
             ])
         })
     ]);
@@ -149,7 +149,7 @@ void handle_scopes_request(mixed msg) {
 
 void handle_action_request(mixed msg) {
     handle_request_generic(msg);
-    
+
     StoppedEvent evt = StoppedEvent();
     evt->body = (["reason" : "pause", "threadId" : 1]);
     sleep(0.5);
